@@ -4,14 +4,20 @@ from werkzeug.utils import secure_filename
 from pdf2image import convert_from_path
 import pytesseract
 import os
-import csv
+from dotenv import load_dotenv  # 追加
 from PIL import Image
 
-pytesseract.pytesseract.tesseract_cmd = '/opt/homebrew/bin/tesseract'
+# 環境変数を読み込む
+load_dotenv()
+
+# Tesseractのパスを設定
+pytesseract.pytesseract.tesseract_cmd = os.getenv('TESSERACT_CMD', '/usr/local/bin/tesseract')
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
+
+# データベース設定を環境変数から読み込む
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
