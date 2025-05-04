@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>OCR結果</title>
+</head>
+<body>
+    <h1>OCR結果</h1>
+    <ul>
+        {% for result in results %}
+        <li>
+            <strong>{{ result.filename }}</strong><br>
+            <pre>{{ result.text }}</pre>
+        </li>
+        {% endfor %}
+    </ul>
+    <a href="/">戻る</a>
+    <a href="/download_csv">CSVでダウンロード</a>
+</body>
+</html>
