@@ -37,8 +37,8 @@ import layoutparser as lp
 from layoutparser.visualization import draw_box
 import cv2
 import numpy as np
-
-
+from models import db, OCRResult
+import json  # ← 上部に追加済みでOK
 
 # ── セル分割ユーティリティ関数 ──
 def segment_table_cells(pil_image, table_block):
@@ -114,7 +114,9 @@ app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
+# ✅ モデルを初期化
+db.init_app(app)
+
 # 画像配信用
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
@@ -127,12 +129,6 @@ MODEL = Detectron2LayoutModel(
     extra_config=["MODEL.ROI_HEADS.SCORE_THRESH_TEST", 0.5],
     label_map={0:"Text",1:"Title",2:"List",3:"Table",4:"Figure"}
 )
-
-# DB モデル
-class OCRResult(db.Model):
-    id       = db.Column(db.Integer, primary_key=True)
-    filename = db.Column(db.String(100), nullable=False)
-    text     = db.Column(db.Text, nullable=False)
 
 with app.app_context():
     db.create_all()
@@ -213,7 +209,12 @@ def upload_file():
     # 4) DB 保存
     OCRResult.query.delete()
     db.session.commit()
-    rec = OCRResult(filename=filename, text=full_text)
+
+    rec = OCRResult(
+        filename=filename,
+        text=full_text,
+        table_json=json.dumps(table_rows, ensure_ascii=False)  # ✅ 追加保存
+    )
     db.session.add(rec)
     db.session.commit()
 
@@ -229,14 +230,20 @@ def download_csv():
     rec = OCRResult.query.order_by(OCRResult.id.desc()).first()
     if not rec:
         return "データがありません。", 404
-    # CSV は table_rows から
-    # ここは簡易的に full_text を改行で
-    rows = rec.text.split("\n")
+
+    # ✅ table_json を使って2D配列に戻す
+    import json
+    if rec.table_json:
+        rows = json.loads(rec.table_json)
+    else:
+        # fallback: 改行テキストから1列CSV（古い形式）
+        rows = [[line] for line in rec.text.split("\n")]
+
     path = 'ocr_results.csv'
     with open(path, 'w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
-        for r in rows:
-            writer.writerow([r])
+        writer.writerows(rows)
+
     return send_file(path, as_attachment=True,
                      download_name='ocr_results.csv',
                      mimetype='text/csv')

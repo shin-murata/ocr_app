@@ -16,13 +16,22 @@
       {% if table_rows %}
       <h2>抽出テーブル</h2>
       <table border="1" cellpadding="4" cellspacing="0">
-        {% for row in table_rows %}
-        <tr>
-          {% for cell in row %}
-          <td>{{ cell }}</td>
+        <thead>
+          <tr>
+            {% for col in table_rows[0] %}
+              <th>{{ col }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in table_rows[1:] %}
+            <tr>
+              {% for cell in row %}
+                <td>{{ cell }}</td>
+              {% endfor %}
+            </tr>
           {% endfor %}
-        </tr>
-        {% endfor %}
+        </tbody>
       </table>
       {% endif %}
 
