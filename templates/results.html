@@ -2,18 +2,46 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>OCR結果</title>
+    <title>OCR＆レイアウト結果</title>
 </head>
 <body>
-    <h1>OCR結果</h1>
+    <h1>OCR＆レイアウト結果</h1>
+
     {% if result %}
-        <p><strong>ファイル名:</strong> {{ result.filename }}</p>
-        <pre>{{ result.text }}</pre>
+      <p><strong>ファイル名:</strong> {{ result.filename }}</p>
+
+      <h2>OCR 結果</h2>
+      <pre>{{ result.text }}</pre>
+
+      {% if table_rows %}
+      <h2>抽出テーブル</h2>
+      <table border="1" cellpadding="4" cellspacing="0">
+        {% for row in table_rows %}
+        <tr>
+          {% for cell in row %}
+          <td>{{ cell }}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </table>
+      {% endif %}
+
+      <h2>レイアウト検出結果</h2>
+      {% if layout_image %}
+      <img
+        src="{{ url_for('uploaded_file', filename=layout_image) }}"
+        alt="Layout Visualization"
+        style="max-width:100%; border:1px solid #ccc;"
+      >
+      {% endif %}
+
+      <p>
+        <a href="/">戻る</a> |
+        <a href="/download_csv">CSVでダウンロード</a>
+      </p>
     {% else %}
-        <p>データがありません。</p>
+      <p>データがありません。</p>
+      <p><a href="/">戻る</a></p>
     {% endif %}
-    <br>
-    <a href="/">戻る</a>
-    <a href="/download_csv">CSVでダウンロード</a>
 </body>
 </html>
