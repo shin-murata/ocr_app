@@ -1,22 +1,23 @@
-# --- Python & Flask ---
+# virtualenv
+.venv/
+venv/
+
+# Python caches
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
-*.db
-instance/
-uploads/
-venv/
-*.log
-*.sqlite3
-*.csv
 
-# --- macOS ---
+# OS / editor
 .DS_Store
-
-# --- VS Code ---
+.idea/
 .vscode/
 
-# --- 環境ファイル ---
-.env
-.env.*
+# Models / caches
+.cache/
+.paddleocr/
+checkpoints/
+*.pth
+*.onnx
+
+# App outputs
+uploads/
+ocr_results.csv
