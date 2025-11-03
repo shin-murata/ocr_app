@@ -98,33 +98,14 @@ def segment_table_cells(pil_image, table_block):
     return cells
 
 # ── Detectron2 互換パッチ ──
-from PIL import Image
 Image.LINEAR = Image.BILINEAR
-
-# detectron2 が無い場合も完全に安全にスキップできるよう修正
 try:
-    import detectron2  # ← ここで本体が無ければ即 except に行く
     from layoutparser.models.detectron2.layoutmodel import Detectron2LayoutModel
     _HAS_D2 = True
 except Exception as e:
     Detectron2LayoutModel = None
     _HAS_D2 = False
     print("[WARN] Detectron2 not available, layout detection will be skipped:", e)
-
-# レイアウト検出モデル（Detectron2 が使える時だけ初期化）
-MODEL = None
-if _HAS_D2:
-    try:
-        MODEL = Detectron2LayoutModel(
-            config_path="lp://PubLayNet/faster_rcnn_R_50_FPN_3x/config",
-            model_path=os.path.expanduser("~/.cache/layoutparser/checkpoints/PubLayNet/model_final.pth"),
-            extra_config=["MODEL.ROI_HEADS.SCORE_THRESH_TEST", 0.5],
-            label_map={0:"Text",1:"Title",2:"List",3:"Table",4:"Figure"}
-        )
-    except Exception as e:
-        print("[WARN] Detectron2 backend not usable now. Disabling layout detection:", e)
-        MODEL = None
-        _HAS_D2 = False
 
 # 環境変数読み込み
 load_dotenv(override=True)
